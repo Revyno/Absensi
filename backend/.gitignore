@@ -1,0 +1,13 @@
+# Env
+.env
+.env.local
+*.env
+
+# Go
+/bin/
+*.exe
+*.out
+
+# Editor
+.vscode/
+.idea/
