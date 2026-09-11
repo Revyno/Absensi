@@ -10,8 +10,6 @@ type Repository struct{ db *gorm.DB }
 
 func NewRepository(db *gorm.DB) *Repository { return &Repository{db: db} }
 
-// --- Leave Types ---
-
 func (r *Repository) ListTypes() ([]models.LeaveType, error) {
 	var items []models.LeaveType
 	err := r.db.Order("name").Find(&items).Error
@@ -19,8 +17,6 @@ func (r *Repository) ListTypes() ([]models.LeaveType, error) {
 }
 
 func (r *Repository) CreateType(t *models.LeaveType) error { return r.db.Create(t).Error }
-
-// --- Leave Requests ---
 
 func (r *Repository) Create(lr *models.LeaveRequest) error { return r.db.Create(lr).Error }
 
@@ -43,7 +39,6 @@ func (r *Repository) List(page, limit int, employeeID, status string) ([]models.
 	return paginate(q, page, limit)
 }
 
-// ListByManager: request milik anggota tim (employees.manager_id = managerEmployeeID).
 func (r *Repository) ListByManager(managerEmployeeID string, page, limit int, status string) ([]models.LeaveRequest, int64, error) {
 	sub := r.db.Model(&models.Employee{}).Select("id").Where("manager_id = ?", managerEmployeeID)
 	q := r.db.Model(&models.LeaveRequest{}).Preload("Employee").Preload("LeaveType").

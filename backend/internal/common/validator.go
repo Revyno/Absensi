@@ -7,7 +7,6 @@ import (
 
 var validate = validator.New()
 
-// Validate mengembalikan map field->pesan, atau nil jika valid.
 func Validate(s any) map[string][]string {
 	err := validate.Struct(s)
 	if err == nil {
@@ -21,7 +20,6 @@ func Validate(s any) map[string][]string {
 	return out
 }
 
-// BindAndValidate parse body JSON lalu validasi. Return false jika sudah membalas error.
 func BindAndValidate(c *fiber.Ctx, out any) bool {
 	if err := c.BodyParser(out); err != nil {
 		_ = Fail(c, fiber.StatusBadRequest, "Invalid request body")

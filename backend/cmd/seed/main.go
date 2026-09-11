@@ -1,6 +1,3 @@
-// Command seed: jalankan migrasi + isi data contoh untuk testing semua route.
-//
-//	go run ./cmd/seed
 package main
 
 import (

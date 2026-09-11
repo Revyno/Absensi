@@ -1,4 +1,3 @@
-// Package department: lookup sederhana, jadi handler langsung ke DB (tanpa layer service/repo terpisah).
 package department
 
 import (

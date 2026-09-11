@@ -7,7 +7,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// RequireRole membatasi akses ke daftar role yang diizinkan.
 func RequireRole(roles ...models.Role) fiber.Handler {
 	allowed := make(map[string]bool, len(roles))
 	for _, r := range roles {

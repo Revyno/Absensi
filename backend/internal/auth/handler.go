@@ -34,7 +34,6 @@ func (h *Handler) Refresh(c *fiber.Ctx) error {
 	return common.Success(c, fiber.StatusOK, "Token refreshed", res)
 }
 
-// Logout stateless: client cukup membuang token. Endpoint disediakan untuk konsistensi API.
 func (h *Handler) Logout(c *fiber.Ctx) error {
 	return common.Success(c, fiber.StatusOK, "Logout successful", nil)
 }

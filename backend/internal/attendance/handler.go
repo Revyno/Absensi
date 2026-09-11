@@ -35,7 +35,6 @@ func (h *Handler) CheckOut(c *fiber.Ctx) error {
 	return common.Success(c, fiber.StatusOK, "Checked out", att)
 }
 
-// List: EMPLOYEE hanya melihat miliknya; role lain bisa filter ?employee_id & ?date.
 func (h *Handler) List(c *fiber.Ctx) error {
 	page, limit := common.Paginate(c)
 	empFilter := c.Query("employee_id")
@@ -49,7 +48,6 @@ func (h *Handler) List(c *fiber.Ctx) error {
 	return common.SuccessMeta(c, "OK", items, common.Meta{Page: page, Limit: limit, Total: total})
 }
 
-// History: riwayat absensi milik employee yang login.
 func (h *Handler) History(c *fiber.Ctx) error {
 	empID := common.EmployeeID(c)
 	if empID == "" {

@@ -43,7 +43,6 @@ func (h *Handler) Generate(c *fiber.Ctx) error {
 	return common.Success(c, fiber.StatusCreated, "Payroll generated", p)
 }
 
-// List: EMPLOYEE hanya melihat payroll miliknya yang sudah published.
 func (h *Handler) List(c *fiber.Ctx) error {
 	page, limit := common.Paginate(c)
 	empFilter := c.Query("employee_id")
@@ -59,7 +58,6 @@ func (h *Handler) List(c *fiber.Ctx) error {
 	return common.SuccessMeta(c, "OK", items, common.Meta{Page: page, Limit: limit, Total: total})
 }
 
-// Get berfungsi sebagai payslip. EMPLOYEE hanya boleh payroll miliknya yang published.
 func (h *Handler) Get(c *fiber.Ctx) error {
 	p, err := h.svc.Get(c.Params("id"))
 	if err != nil {

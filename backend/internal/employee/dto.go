@@ -10,7 +10,7 @@ type CreateRequest struct {
 	DepartmentID *string `json:"department_id"`
 	PositionID   *string `json:"position_id"`
 	ManagerID    *string `json:"manager_id"`
-	JoinDate     string  `json:"join_date"` // YYYY-MM-DD
+	JoinDate     string  `json:"join_date"`
 	BasicSalary  float64 `json:"basic_salary"`
 }
 

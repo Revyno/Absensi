@@ -36,27 +36,24 @@ func Setup(app *fiber.App, db *gorm.DB, cfg *config.Config) {
 		return c.JSON(fiber.Map{"status": "ok"})
 	})
 
-	docs.Mount(app) // Swagger UI di /docs
+	docs.Mount(app)
 
 	api := app.Group("/api/v1")
 
-	// Auth
 	a := api.Group("/auth")
 	a.Post("/login", authH.Login)
 	a.Post("/refresh", authH.Refresh)
 	a.Post("/logout", protected, authH.Logout)
 	a.Get("/me", protected, authH.Me)
 
-	// Employees
 	e := api.Group("/employees", protected)
 	e.Get("/", empH.List)
 	e.Post("/", hrAdmin, empH.Create)
-	e.Get("/me", empH.Profile) // harus sebelum "/:id"
+	e.Get("/me", empH.Profile)
 	e.Get("/:id", empH.Get)
 	e.Put("/:id", hrAdmin, empH.Update)
 	e.Delete("/:id", hrAdmin, empH.Delete)
 
-	// Departments
 	d := api.Group("/departments", protected)
 	d.Get("/", deptH.List)
 	d.Post("/", hrAdmin, deptH.Create)
@@ -64,7 +61,6 @@ func Setup(app *fiber.App, db *gorm.DB, cfg *config.Config) {
 	d.Put("/:id", hrAdmin, deptH.Update)
 	d.Delete("/:id", hrAdmin, deptH.Delete)
 
-	// Positions
 	p := api.Group("/positions", protected)
 	p.Get("/", posH.List)
 	p.Post("/", hrAdmin, posH.Create)
@@ -72,19 +68,16 @@ func Setup(app *fiber.App, db *gorm.DB, cfg *config.Config) {
 	p.Put("/:id", hrAdmin, posH.Update)
 	p.Delete("/:id", hrAdmin, posH.Delete)
 
-	// Attendance
 	at := api.Group("/attendance", protected)
 	at.Post("/check-in", attH.CheckIn)
 	at.Post("/check-out", attH.CheckOut)
-	at.Get("/history", attH.History) // harus sebelum "/"
+	at.Get("/history", attH.History)
 	at.Get("/", attH.List)
 
-	// Leave types
 	lt := api.Group("/leave-types", protected)
 	lt.Get("/", leaveH.ListTypes)
 	lt.Post("/", hrAdmin, leaveH.CreateType)
 
-	// Leave requests
 	l := api.Group("/leaves", protected)
 	l.Get("/", leaveH.List)
 	l.Post("/", leaveH.Create)
@@ -93,19 +86,16 @@ func Setup(app *fiber.App, db *gorm.DB, cfg *config.Config) {
 	l.Post("/:id/approve", managerUp, leaveH.Approve)
 	l.Post("/:id/reject", managerUp, leaveH.Reject)
 
-	// Payroll periods
 	pp := api.Group("/payroll-periods", protected)
 	pp.Get("/", managerUp, payH.ListPeriods)
 	pp.Post("/", hrAdmin, payH.CreatePeriod)
 
-	// Payrolls
 	pr := api.Group("/payrolls", protected)
 	pr.Get("/", payH.List)
 	pr.Post("/", hrAdmin, payH.Generate)
 	pr.Get("/:id", payH.Get)
 	pr.Post("/:id/publish", hrAdmin, payH.Publish)
 
-	// BPJS
 	b := api.Group("/bpjs", protected)
 	b.Get("/", bpjsH.List)
 	b.Post("/", hrAdmin, bpjsH.Create)

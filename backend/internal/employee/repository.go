@@ -12,7 +12,6 @@ type Repository struct{ db *gorm.DB }
 
 func NewRepository(db *gorm.DB) *Repository { return &Repository{db: db} }
 
-// CreateWithUser membuat User + Employee dalam satu transaksi.
 func (r *Repository) CreateWithUser(user *models.User, emp *models.Employee) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(user).Error; err != nil {
@@ -60,7 +59,6 @@ func (r *Repository) Save(emp *models.Employee) error {
 	return r.db.Save(emp).Error
 }
 
-// Deactivate menonaktifkan employee sekaligus akun user-nya.
 func (r *Repository) Deactivate(id string) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		var emp models.Employee

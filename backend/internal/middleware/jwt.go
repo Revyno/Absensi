@@ -8,7 +8,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// JWTProtected memvalidasi access token lalu menaruh identitas di c.Locals.
 func JWTProtected(secret string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		auth := c.Get("Authorization")

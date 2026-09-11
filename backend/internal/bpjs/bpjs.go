@@ -1,4 +1,3 @@
-// Package bpjs: CRUD data BPJS. Handler langsung ke DB (thin).
 package bpjs
 
 import (
@@ -22,7 +21,6 @@ type request struct {
 	Status               string  `json:"status"`
 }
 
-// List: EMPLOYEE hanya melihat BPJS miliknya; role lain bisa filter ?employee_id.
 func (h *Handler) List(c *fiber.Ctx) error {
 	var items []models.BPJS
 	q := h.db.Preload("Employee").Order("created_at DESC")

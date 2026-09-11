@@ -11,8 +11,6 @@ type Handler struct{ svc *Service }
 
 func NewHandler(svc *Service) *Handler { return &Handler{svc: svc} }
 
-// --- Leave Types ---
-
 func (h *Handler) ListTypes(c *fiber.Ctx) error {
 	items, err := h.svc.ListTypes()
 	if err != nil {
@@ -33,8 +31,6 @@ func (h *Handler) CreateType(c *fiber.Ctx) error {
 	return common.Success(c, fiber.StatusCreated, "Leave type created", t)
 }
 
-// --- Leave Requests ---
-
 func (h *Handler) Create(c *fiber.Ctx) error {
 	empID := common.EmployeeID(c)
 	if empID == "" {
@@ -51,7 +47,6 @@ func (h *Handler) Create(c *fiber.Ctx) error {
 	return common.Success(c, fiber.StatusCreated, "Leave request created", lr)
 }
 
-// List: EMPLOYEE -> milik sendiri; MANAGER -> tim; HR/SUPER_ADMIN -> semua (filter ?employee_id, ?status).
 func (h *Handler) List(c *fiber.Ctx) error {
 	page, limit := common.Paginate(c)
 	status := c.Query("status")

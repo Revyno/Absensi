@@ -15,7 +15,6 @@ var (
 	ErrAlreadyCheckedOut = errors.New("already checked out today")
 )
 
-// lateThreshold: jam kerja mulai. ponytail: hardcoded 09:00 — pindahkan ke config/company policy saat multi-shift dibutuhkan.
 var lateThreshold = 9
 
 type Service struct{ repo *Repository }

@@ -26,14 +26,12 @@ func (s *Service) CreatePeriod(req PeriodRequest) (*models.PayrollPeriod, error)
 
 func (s *Service) ListPeriods() ([]models.PayrollPeriod, error) { return s.repo.ListPeriods() }
 
-// computeSalary: Gross = Basic + Allowance + Overtime + Bonus; Net = Gross - Deduction.
 func computeSalary(basic, allowance, overtime, bonus, deduction float64) (gross, net float64) {
 	gross = basic + allowance + overtime + bonus
 	net = gross - deduction
 	return
 }
 
-// Generate menghitung payroll: Gross = Basic + Allowance + Overtime + Bonus; Net = Gross - Deduction.
 func (s *Service) Generate(req GenerateRequest) (*models.Payroll, error) {
 	emp, err := s.repo.FindEmployee(req.EmployeeID)
 	if err != nil {

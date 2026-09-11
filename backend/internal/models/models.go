@@ -7,7 +7,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// Role enum untuk RBAC.
 type Role string
 
 const (
@@ -17,7 +16,6 @@ const (
 	RoleEmployee   Role = "EMPLOYEE"
 )
 
-// Base menyediakan UUID primary key + timestamps untuk semua tabel.
 type Base struct {
 	ID        string    `gorm:"type:uuid;primaryKey" json:"id"`
 	CreatedAt time.Time `json:"created_at"`
@@ -145,7 +143,6 @@ type BPJS struct {
 	Employee             *Employee `json:"employee,omitempty"`
 }
 
-// AllModels dipakai database.Migrate untuk auto-migrate.
 func AllModels() []any {
 	return []any{
 		&User{}, &Employee{}, &Department{}, &Position{},

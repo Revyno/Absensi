@@ -12,8 +12,6 @@ type Repository struct{ db *gorm.DB }
 
 func NewRepository(db *gorm.DB) *Repository { return &Repository{db: db} }
 
-// --- Periods ---
-
 func (r *Repository) CreatePeriod(p *models.PayrollPeriod) error { return r.db.Create(p).Error }
 
 func (r *Repository) ListPeriods() ([]models.PayrollPeriod, error) {
@@ -28,17 +26,12 @@ func (r *Repository) FindPeriod(id string) (*models.PayrollPeriod, error) {
 	return &p, err
 }
 
-// --- Employees (untuk ambil basic salary) ---
-
 func (r *Repository) FindEmployee(id string) (*models.Employee, error) {
 	var e models.Employee
 	err := r.db.First(&e, "id = ?", id).Error
 	return &e, err
 }
 
-// --- Payrolls ---
-
-// UpsertPayroll: regenerate menimpa draft yang sama, tapi tolak jika sudah published.
 func (r *Repository) UpsertPayroll(p *models.Payroll) error {
 	var existing models.Payroll
 	err := r.db.Where("employee_id = ? AND payroll_period_id = ?", p.EmployeeID, p.PayrollPeriodID).First(&existing).Error

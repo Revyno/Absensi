@@ -1,4 +1,3 @@
-// Package position: lookup sederhana, handler langsung ke DB.
 package position
 
 import (

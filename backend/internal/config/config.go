@@ -20,9 +20,8 @@ type Config struct {
 	SeedAdminPassword string
 }
 
-// Load membaca .env (jika ada) lalu environment variables.
 func Load() *Config {
-	_ = godotenv.Load() // .env opsional; production pakai real env.
+	_ = godotenv.Load()
 
 	cfg := &Config{
 		AppEnv:            env("APP_ENV", "development"),
@@ -33,7 +32,6 @@ func Load() *Config {
 		SeedAdminPassword: env("SEED_ADMIN_PASSWORD", "admin123"),
 	}
 
-	// Fallback: susun DSN dari DB_* bila DATABASE_URL tidak diset.
 	if cfg.DatabaseURL == "" {
 		cfg.DatabaseURL = fmt.Sprintf(
 			"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",

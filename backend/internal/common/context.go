@@ -6,8 +6,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// Helpers untuk membaca identitas dari JWT middleware (c.Locals).
-
 func UserID(c *fiber.Ctx) string {
 	v, _ := c.Locals("user_id").(string)
 	return v

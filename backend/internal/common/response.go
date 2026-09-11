@@ -8,7 +8,6 @@ type Meta struct {
 	Total int64 `json:"total"`
 }
 
-// Success membalas { success, message, data }.
 func Success(c *fiber.Ctx, status int, message string, data any) error {
 	return c.Status(status).JSON(fiber.Map{
 		"success": true,
@@ -17,7 +16,6 @@ func Success(c *fiber.Ctx, status int, message string, data any) error {
 	})
 }
 
-// SuccessMeta menambahkan meta pagination.
 func SuccessMeta(c *fiber.Ctx, message string, data any, meta Meta) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"success": true,
@@ -27,7 +25,6 @@ func SuccessMeta(c *fiber.Ctx, message string, data any, meta Meta) error {
 	})
 }
 
-// Fail membalas { success:false, message }.
 func Fail(c *fiber.Ctx, status int, message string) error {
 	return c.Status(status).JSON(fiber.Map{
 		"success": false,
@@ -35,7 +32,6 @@ func Fail(c *fiber.Ctx, status int, message string) error {
 	})
 }
 
-// FailValidation membalas 422 dengan detail field errors.
 func FailValidation(c *fiber.Ctx, errors map[string][]string) error {
 	return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{
 		"success": false,

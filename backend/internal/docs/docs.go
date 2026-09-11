@@ -1,5 +1,3 @@
-// Package docs menyajikan Swagger UI dari spec OpenAPI yang di-embed.
-// Tanpa dependency/CLI tambahan: UI dimuat dari CDN, spec dari file lokal.
 package docs
 
 import (
@@ -34,7 +32,6 @@ const swaggerHTML = `<!DOCTYPE html>
 </body>
 </html>`
 
-// Mount mendaftarkan route dokumentasi: GET /docs dan GET /openapi.yaml.
 func Mount(app *fiber.App) {
 	app.Get("/openapi.yaml", func(c *fiber.Ctx) error {
 		c.Set("Content-Type", "application/yaml")

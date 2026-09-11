@@ -58,7 +58,6 @@ func (h *Handler) Delete(c *fiber.Ctx) error {
 	return common.Success(c, fiber.StatusOK, "Employee deactivated", nil)
 }
 
-// Profile mengembalikan data employee milik user yang login.
 func (h *Handler) Profile(c *fiber.Ctx) error {
 	emp, err := h.svc.GetByUserID(common.UserID(c))
 	if err != nil {

@@ -10,7 +10,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// Run membuat akun SUPER_ADMIN awal bila belum ada.
 func Run(db *gorm.DB, cfg *config.Config) error {
 	var count int64
 	db.Model(&models.User{}).Where("email = ?", cfg.SeedAdminEmail).Count(&count)
