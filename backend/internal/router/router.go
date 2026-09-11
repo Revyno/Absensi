@@ -6,6 +6,7 @@ import (
 	"hris-backend/internal/bpjs"
 	"hris-backend/internal/config"
 	"hris-backend/internal/department"
+	"hris-backend/internal/docs"
 	"hris-backend/internal/employee"
 	"hris-backend/internal/leave"
 	"hris-backend/internal/middleware"
@@ -34,6 +35,8 @@ func Setup(app *fiber.App, db *gorm.DB, cfg *config.Config) {
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"status": "ok"})
 	})
+
+	docs.Mount(app) // Swagger UI di /docs
 
 	api := app.Group("/api/v1")
 

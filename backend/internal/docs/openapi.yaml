@@ -1,0 +1,466 @@
+openapi: 3.0.3
+info:
+  title: HRIS API
+  version: "1.0.0"
+  description: >
+    HRIS backend (Fiber + GORM). Semua endpoint bisnis diprefix `/api/v1`.
+    Login dulu di `/api/v1/auth/login`, klik tombol **Authorize** dan paste `access_token`.
+servers:
+  - url: /
+tags:
+  - name: Auth
+  - name: Employees
+  - name: Departments
+  - name: Positions
+  - name: Attendance
+  - name: Leaves
+  - name: Payroll
+  - name: BPJS
+  - name: System
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        message: { type: string, example: OK }
+        data: {}
+        meta:
+          type: object
+          nullable: true
+          properties:
+            page: { type: integer, example: 1 }
+            limit: { type: integer, example: 10 }
+            total: { type: integer, example: 42 }
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email, example: admin@lsi.com }
+        password: { type: string, example: admin123 }
+    RefreshRequest:
+      type: object
+      required: [refresh_token]
+      properties:
+        refresh_token: { type: string }
+    EmployeeCreate:
+      type: object
+      required: [email, password, employee_code, full_name]
+      properties:
+        email: { type: string, format: email, example: newuser@lsi.com }
+        password: { type: string, minLength: 6, example: password123 }
+        role: { type: string, enum: [SUPER_ADMIN, HR, MANAGER, EMPLOYEE], example: EMPLOYEE }
+        employee_code: { type: string, example: EMP-100 }
+        full_name: { type: string, example: Nama Lengkap }
+        phone: { type: string, example: "08123456789" }
+        department_id: { type: string, nullable: true }
+        position_id: { type: string, nullable: true }
+        manager_id: { type: string, nullable: true }
+        join_date: { type: string, example: "2025-01-06" }
+        basic_salary: { type: number, example: 8000000 }
+    EmployeeUpdate:
+      type: object
+      properties:
+        full_name: { type: string }
+        phone: { type: string }
+        department_id: { type: string }
+        position_id: { type: string }
+        manager_id: { type: string }
+        join_date: { type: string, example: "2025-01-06" }
+        employment_status: { type: string, example: active }
+        basic_salary: { type: number }
+    NameRequest:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, example: IT }
+    PositionRequest:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, example: Backend Engineer }
+        department_id: { type: string, nullable: true }
+    LeaveTypeRequest:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, example: Annual Leave }
+        description: { type: string, example: Cuti tahunan }
+    LeaveCreate:
+      type: object
+      required: [leave_type_id, start_date, end_date]
+      properties:
+        leave_type_id: { type: string }
+        start_date: { type: string, example: "2026-10-01" }
+        end_date: { type: string, example: "2026-10-03" }
+        reason: { type: string, example: Liburan keluarga }
+        attachment: { type: string }
+    PeriodRequest:
+      type: object
+      required: [name, start_date, end_date]
+      properties:
+        name: { type: string, example: September 2026 }
+        start_date: { type: string, example: "2026-09-01" }
+        end_date: { type: string, example: "2026-09-30" }
+    PayrollGenerate:
+      type: object
+      required: [employee_id, payroll_period_id]
+      properties:
+        employee_id: { type: string }
+        payroll_period_id: { type: string }
+        total_allowance: { type: number, example: 1000000 }
+        total_overtime: { type: number, example: 500000 }
+        total_bonus: { type: number, example: 0 }
+        total_deduction: { type: number, example: 300000 }
+    BPJSRequest:
+      type: object
+      required: [employee_id]
+      properties:
+        employee_id: { type: string }
+        bpjs_number: { type: string, example: "0001234567890" }
+        bpjs_type: { type: string, example: Kesehatan }
+        employee_contribution: { type: number, example: 80000 }
+        company_contribution: { type: number, example: 320000 }
+        status: { type: string, example: active }
+
+security:
+  - bearerAuth: []
+
+paths:
+  /health:
+    get:
+      tags: [System]
+      summary: Health check
+      security: []
+      responses: { "200": { description: OK } }
+
+  /api/v1/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login (dapatkan access & refresh token)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LoginRequest" }
+      responses:
+        "200": { description: Login berhasil }
+        "401": { description: Kredensial salah }
+  /api/v1/auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Tukar refresh token dengan token baru
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RefreshRequest" }
+      responses: { "200": { description: OK }, "401": { description: Token invalid } }
+  /api/v1/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout (stateless)
+      responses: { "200": { description: OK } }
+  /api/v1/auth/me:
+    get:
+      tags: [Auth]
+      summary: Profil user yang login
+      responses: { "200": { description: OK }, "404": { description: Tidak ditemukan } }
+
+  /api/v1/employees:
+    get:
+      tags: [Employees]
+      summary: List employee
+      parameters:
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: limit, in: query, schema: { type: integer, default: 10 } }
+        - { name: search, in: query, schema: { type: string } }
+        - { name: department_id, in: query, schema: { type: string } }
+      responses: { "200": { description: OK } }
+    post:
+      tags: [Employees]
+      summary: Buat employee (HR/SUPER_ADMIN)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EmployeeCreate" }
+      responses: { "201": { description: Berhasil }, "400": { description: Error } }
+  /api/v1/employees/me:
+    get:
+      tags: [Employees]
+      summary: Profil employee milik user login
+      responses: { "200": { description: OK }, "404": { description: Tidak ditemukan } }
+  /api/v1/employees/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Employees]
+      summary: Detail employee
+      responses: { "200": { description: OK }, "404": { description: Tidak ditemukan } }
+    put:
+      tags: [Employees]
+      summary: Update employee (HR/SUPER_ADMIN)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EmployeeUpdate" }
+      responses: { "200": { description: OK } }
+    delete:
+      tags: [Employees]
+      summary: Nonaktifkan employee (HR/SUPER_ADMIN)
+      responses: { "200": { description: OK } }
+
+  /api/v1/departments:
+    get:
+      tags: [Departments]
+      summary: List department
+      responses: { "200": { description: OK } }
+    post:
+      tags: [Departments]
+      summary: Buat department (HR/SUPER_ADMIN)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/NameRequest" }
+      responses: { "201": { description: Dibuat } }
+  /api/v1/departments/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Departments]
+      summary: Detail department
+      responses: { "200": { description: OK }, "404": { description: Tidak ditemukan } }
+    put:
+      tags: [Departments]
+      summary: Update department (HR/SUPER_ADMIN)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/NameRequest" }
+      responses: { "200": { description: OK } }
+    delete:
+      tags: [Departments]
+      summary: Hapus department (HR/SUPER_ADMIN)
+      responses: { "200": { description: OK } }
+
+  /api/v1/positions:
+    get:
+      tags: [Positions]
+      summary: List position
+      parameters:
+        - { name: department_id, in: query, schema: { type: string } }
+      responses: { "200": { description: OK } }
+    post:
+      tags: [Positions]
+      summary: Buat position (HR/SUPER_ADMIN)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PositionRequest" }
+      responses: { "201": { description: Dibuat } }
+  /api/v1/positions/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Positions]
+      summary: Detail position
+      responses: { "200": { description: OK }, "404": { description: Tidak ditemukan } }
+    put:
+      tags: [Positions]
+      summary: Update position (HR/SUPER_ADMIN)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PositionRequest" }
+      responses: { "200": { description: OK } }
+    delete:
+      tags: [Positions]
+      summary: Hapus position (HR/SUPER_ADMIN)
+      responses: { "200": { description: OK } }
+
+  /api/v1/attendance/check-in:
+    post:
+      tags: [Attendance]
+      summary: Check-in hari ini
+      responses: { "201": { description: Checked in }, "400": { description: Error } }
+  /api/v1/attendance/check-out:
+    post:
+      tags: [Attendance]
+      summary: Check-out hari ini
+      responses: { "200": { description: Checked out }, "400": { description: Error } }
+  /api/v1/attendance/history:
+    get:
+      tags: [Attendance]
+      summary: Riwayat absensi milik sendiri
+      parameters:
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: limit, in: query, schema: { type: integer, default: 10 } }
+      responses: { "200": { description: OK } }
+  /api/v1/attendance:
+    get:
+      tags: [Attendance]
+      summary: List absensi (filter employee_id & date untuk non-EMPLOYEE)
+      parameters:
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: limit, in: query, schema: { type: integer, default: 10 } }
+        - { name: employee_id, in: query, schema: { type: string } }
+        - { name: date, in: query, schema: { type: string, example: "2026-09-11" } }
+      responses: { "200": { description: OK } }
+
+  /api/v1/leave-types:
+    get:
+      tags: [Leaves]
+      summary: List tipe cuti
+      responses: { "200": { description: OK } }
+    post:
+      tags: [Leaves]
+      summary: Buat tipe cuti (HR/SUPER_ADMIN)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LeaveTypeRequest" }
+      responses: { "201": { description: Dibuat } }
+  /api/v1/leaves:
+    get:
+      tags: [Leaves]
+      summary: List pengajuan cuti (scope by role)
+      parameters:
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: limit, in: query, schema: { type: integer, default: 10 } }
+        - { name: status, in: query, schema: { type: string, enum: [PENDING, APPROVED, REJECTED, CANCELLED] } }
+        - { name: employee_id, in: query, schema: { type: string } }
+      responses: { "200": { description: OK } }
+    post:
+      tags: [Leaves]
+      summary: Ajukan cuti
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LeaveCreate" }
+      responses: { "201": { description: Dibuat } }
+  /api/v1/leaves/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Leaves]
+      summary: Detail pengajuan cuti
+      responses: { "200": { description: OK }, "404": { description: Tidak ditemukan } }
+  /api/v1/leaves/{id}/cancel:
+    post:
+      tags: [Leaves]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      summary: Batalkan cuti (pemilik, saat masih PENDING)
+      responses: { "200": { description: OK } }
+  /api/v1/leaves/{id}/approve:
+    post:
+      tags: [Leaves]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      summary: Setujui cuti (MANAGER ke atas)
+      responses: { "200": { description: OK } }
+  /api/v1/leaves/{id}/reject:
+    post:
+      tags: [Leaves]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      summary: Tolak cuti (MANAGER ke atas)
+      responses: { "200": { description: OK } }
+
+  /api/v1/payroll-periods:
+    get:
+      tags: [Payroll]
+      summary: List periode payroll (MANAGER ke atas)
+      responses: { "200": { description: OK } }
+    post:
+      tags: [Payroll]
+      summary: Buat periode payroll (HR/SUPER_ADMIN)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PeriodRequest" }
+      responses: { "201": { description: Dibuat } }
+  /api/v1/payrolls:
+    get:
+      tags: [Payroll]
+      summary: List payroll (EMPLOYEE hanya miliknya yang published)
+      parameters:
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: limit, in: query, schema: { type: integer, default: 10 } }
+        - { name: employee_id, in: query, schema: { type: string } }
+        - { name: payroll_period_id, in: query, schema: { type: string } }
+        - { name: status, in: query, schema: { type: string } }
+      responses: { "200": { description: OK } }
+    post:
+      tags: [Payroll]
+      summary: Generate payroll (HR/SUPER_ADMIN)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PayrollGenerate" }
+      responses: { "201": { description: Dibuat } }
+  /api/v1/payrolls/{id}:
+    get:
+      tags: [Payroll]
+      summary: Detail payroll / payslip
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses: { "200": { description: OK }, "403": { description: Forbidden }, "404": { description: Tidak ditemukan } }
+  /api/v1/payrolls/{id}/publish:
+    post:
+      tags: [Payroll]
+      summary: Publish payroll (HR/SUPER_ADMIN)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses: { "200": { description: OK } }
+
+  /api/v1/bpjs:
+    get:
+      tags: [BPJS]
+      summary: List BPJS (EMPLOYEE hanya miliknya)
+      parameters:
+        - { name: employee_id, in: query, schema: { type: string } }
+      responses: { "200": { description: OK } }
+    post:
+      tags: [BPJS]
+      summary: Buat data BPJS (HR/SUPER_ADMIN)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BPJSRequest" }
+      responses: { "201": { description: Dibuat } }
+  /api/v1/bpjs/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [BPJS]
+      summary: Detail BPJS
+      responses: { "200": { description: OK }, "403": { description: Forbidden }, "404": { description: Tidak ditemukan } }
+    put:
+      tags: [BPJS]
+      summary: Update BPJS (HR/SUPER_ADMIN)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BPJSRequest" }
+      responses: { "200": { description: OK } }
